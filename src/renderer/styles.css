@@ -1,0 +1,151 @@
+/* Font */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+
+/* Variables */
+:root {
+    --black: #393939;
+    --grey: #4a4a4a;
+    --white: #ffffff;
+    --greyish-white: #b9b9b9;
+}
+
+/* Global */
+*{
+    font-size: 14px;
+    font-family: 'Roboto', sans-serif;
+    /* transition: 0.2s ease; */
+}
+
+::placeholder {
+    color: var(--greyish-white)
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+}
+
+button {
+    cursor: pointer;
+}
+
+/* Generic */
+
+.box {
+    color: var(--greyish-white);
+    background-color: var(--grey);
+    padding: 10px;
+    outline: none;
+    border:none;
+    border-radius: 2px;
+}
+
+button.box:hover {
+    color: var(--white);
+}
+
+/* Right and left section */
+.right {
+    background-color: var(--black);
+    flex: 4;
+    height: 100%;
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    overflow: auto;
+}
+
+.left {
+    flex: 1;
+    min-height: 100%;
+    min-width: 200px;
+    background-color: var(--grey);
+    padding: 25px 10px;
+    overflow: auto;
+}
+
+/* Path and search boxes */
+.right > .inputs {
+    display: flex;
+    gap: 15px;
+}
+
+#path {
+    flex: 4;
+    color: var(--greyish-white);
+}
+
+#path:focus-visible {
+    color: var(--white)
+}
+
+#search-box {
+    flex: 1;
+    color: white !important;
+}
+
+/* View options, sort and filter */
+.options {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.order {
+    display: flex;
+    gap: 15px;
+}
+
+.order > button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+}
+
+
+
+.view {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.view > button {
+    padding: 10px 10px 6px 10px;
+    height: max-content;
+    background-color: transparent !important;
+}
+
+.view > button.active {
+    background-color: var(--grey) !important;
+    color: var(--white) !important;
+}
+
+/* nodes */
+.list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-block: 20px
+}
+
+.node {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--greyish-white);
+    padding: 10px;
+}
+
+.node_name {
+    color: var(--white) !important;
+}
+
+.node_type {
+    color: var(--greyish-white) !important;
+}
