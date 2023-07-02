@@ -16,7 +16,6 @@
   "author": "Haydar Hamieh",
   "license": "MIT",
   "dependencies": {
-    "drivelist": "^11.1.0",
     "electron-squirrel-startup": "^1.0.0"
   },
   "devDependencies": {

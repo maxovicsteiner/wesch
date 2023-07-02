@@ -1,26 +1,7 @@
 const { app, BrowserWindow, Menu, ipcMain } = require("electron");
 const path = require("path");
 const { handleReadDir } = require("./apiWrapper.js");
-const drivelist = require("drivelist");
 require("dotenv").config();
-
-async function getDrives(_event, formatter) {
-  const drives = await drivelist.list();
-  let output = [];
-  drives.forEach(({ mountpoints }) => {
-    if (mountpoints.length === 0) {
-    } else {
-      mountpoints.forEach(({ path }) => {
-        if (formatter instanceof Function) {
-          path = formatter(path);
-        }
-        output.push(path);
-      });
-    }
-  });
-  output = output.flat();
-  return output;
-}
 
 // Detect platform
 const isMac = process.platform === "darwin";
@@ -33,6 +14,8 @@ if (require("electron-squirrel-startup")) {
   app.quit();
 }
 
+let menu = [];
+
 function createMainWindow() {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
@@ -42,6 +25,13 @@ function createMainWindow() {
       preload: path.join(__dirname, "../renderer", "preload.js"),
     },
   });
+
+  let temp = {
+    label: "Open Devtools",
+    click: () => mainWindow.webContents.openDevTools(),
+  };
+
+  menu.push(temp);
 
   // and load the index.html of the app.
   mainWindow.loadFile(path.join(__dirname, "../renderer", "index.html"));
@@ -57,14 +47,12 @@ function createMainWindow() {
 // Some APIs can only be used after this event occurs.
 
 app.on("ready", () => {
+  createMainWindow();
   // Remove the menu
-  Menu.setApplicationMenu(Menu.buildFromTemplate([]));
+  Menu.setApplicationMenu(Menu.buildFromTemplate(menu));
 
   // Handle events emitted by ipcRenderer
   ipcMain.handle("read-dir", handleReadDir);
-  ipcMain.handle("get-drives", getDrives);
-
-  createMainWindow();
 
   // For macOs
   app.on("activate", () => {

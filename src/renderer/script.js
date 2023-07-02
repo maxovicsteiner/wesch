@@ -3,7 +3,7 @@ const container = document.querySelector(".list");
 
 function createNode(file) {
   /*
-    <div class="node">
+    <div class="node" data-path={path}>
           <span class="node_name">
             haydar.txt
             <span class="node_type">(Text Document)</span>
@@ -21,7 +21,7 @@ function createNode(file) {
   node_size.classList.add("node_size");
 
   node_name.innerText = file.name;
-  node_type.innerText = ` (${file.type})`;
+  node_type.innerText = ` (${file.file_type})`;
   node_size.innerText = file.size;
 
   node_name.appendChild(node_type);
@@ -29,15 +29,42 @@ function createNode(file) {
   node.appendChild(node_name);
   node.appendChild(node_size);
 
+  node.dataset.path = file.path;
+  node.dataset.type = file.type;
+
   container.appendChild(node);
 }
 
-fs.readDir("C:/Users/hayda/Desktop/Home/Games").then((files) => {
+function handleDblClick(e) {
+  const { path, type } = e.target.dataset;
+
+  if (type === "DT_DIR") {
+    // User clicked on a folder
+    main(path);
+  }
+}
+
+async function main(path = "/") {
+  //clear the window
+  let nodes = document.querySelectorAll("div.node");
+  nodes.forEach((node) => {
+    node.remove();
+  });
+
+  const files = await fs.readDir(path);
   files.forEach((file) => {
     createNode({
       name: file.name,
-      type: file.file_type,
+      file_type: file.file_type,
       size: "9MB",
+      type: file.type,
+      path: file.path,
     });
   });
-});
+  nodes = document.querySelectorAll("div.node");
+  nodes.forEach((node) => {
+    node.addEventListener("dblclick", handleDblClick);
+  });
+}
+
+main();

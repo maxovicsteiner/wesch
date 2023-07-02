@@ -54,10 +54,22 @@ button.box:hover {
     flex: 4;
     height: 100%;
     padding: 25px;
+    padding-top: 0;
     display: flex;
     flex-direction: column;
     gap: 15px;
     overflow: auto;
+}
+
+.upper-container {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--black);
+    gap: 15px;
+    position: sticky;
+    padding-top: 25px;
+    padding-bottom: 10px;
+    top:0;
 }
 
 .left {
@@ -70,7 +82,7 @@ button.box:hover {
 }
 
 /* Path and search boxes */
-.right > .inputs {
+.inputs {
     display: flex;
     gap: 15px;
 }
@@ -107,8 +119,6 @@ button.box:hover {
     gap: 3px;
 }
 
-
-
 .view {
     display: flex;
     align-items: center;
@@ -131,7 +141,8 @@ button.box:hover {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    padding-block: 20px
+    padding-block: 20px;
+    margin-top: -10px;
 }
 
 .node {
@@ -140,6 +151,7 @@ button.box:hover {
     justify-content: space-between;
     color: var(--greyish-white);
     padding: 10px;
+    border-radius: 3px;
 }
 
 .node_name {
@@ -148,4 +160,8 @@ button.box:hover {
 
 .node_type {
     color: var(--greyish-white) !important;
+}
+
+.node:hover {
+    background: var(--grey);
 }
