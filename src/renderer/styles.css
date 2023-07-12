@@ -156,9 +156,16 @@ button.box:hover {
 
 .node_name {
     color: var(--white) !important;
+    display: flex;
+    align-items: center;
+    gap: 5px;
 }
 
 .node_type {
+    color: var(--greyish-white) !important;
+}
+
+.node_icon {
     color: var(--greyish-white) !important;
 }
 

@@ -2,6 +2,12 @@ const fs = require("fs");
 const Node = require("../classes/Node");
 
 function handleReadDir(_event, path) {
+  const exists = fs.existsSync(path);
+
+  if (!exists) {
+    return new Error("Directory doesn't exist or is protected");
+  }
+
   const files = fs.readdirSync(path, { withFileTypes: true });
   let output = [];
   for (let i = 0; i < files.length; i++) {
@@ -12,10 +18,17 @@ function handleReadDir(_event, path) {
     } else {
       node_path = path + "/" + files[i].name;
     }
+
     if (files[i].isFile()) {
-      output.push(new Node(files[i].name, node_path, 0));
+      if (files[i].name.endsWith(".ini")) {
+        // Ignore INI files
+        continue;
+      }
+      let node = new Node(files[i].name, node_path, 0);
+      output.push(node);
     } else if (files[i].isDirectory()) {
-      output.push(new Node(files[i].name, node_path, 1));
+      let node = new Node(files[i].name, node_path, 1);
+      output.push(node);
     } else {
       continue;
     }

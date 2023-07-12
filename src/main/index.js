@@ -1,10 +1,19 @@
+// Detect platform
+const isMac = process.platform === "darwin";
+const isWin = process.platform === "win32";
+const isLinux = process.platform === "linux";
+const isUnix = isMac || isLinux;
+
+module.exports = {
+  isWin,
+  isUnix,
+};
+
 const { app, BrowserWindow, Menu, ipcMain } = require("electron");
 const path = require("path");
 const { handleReadDir } = require("./apiWrapper.js");
+const { calculateFileSize, calculateFolderSize } = require("../utils");
 require("dotenv").config();
-
-// Detect platform
-const isMac = process.platform === "darwin";
 
 // Dev mode
 const devmode = process.env.NODE_ENV === "development";
@@ -14,7 +23,7 @@ if (require("electron-squirrel-startup")) {
   app.quit();
 }
 
-let menu = [];
+let devMenu = [];
 
 function createMainWindow() {
   // Create the browser window.
@@ -31,15 +40,10 @@ function createMainWindow() {
     click: () => mainWindow.webContents.openDevTools(),
   };
 
-  menu.push(temp);
+  devMenu.push(temp);
 
   // and load the index.html of the app.
   mainWindow.loadFile(path.join(__dirname, "../renderer", "index.html"));
-
-  // Open the DevTools.
-  if (devmode) {
-    mainWindow.webContents.openDevTools();
-  }
 }
 
 // This method will be called when Electron has finished
@@ -49,10 +53,12 @@ function createMainWindow() {
 app.on("ready", () => {
   createMainWindow();
   // Remove the menu
-  Menu.setApplicationMenu(Menu.buildFromTemplate(menu));
+  Menu.setApplicationMenu(Menu.buildFromTemplate(devmode ? devMenu : []));
 
   // Handle events emitted by ipcRenderer
   ipcMain.handle("read-dir", handleReadDir);
+  ipcMain.handle("get-file-size", calculateFileSize);
+  ipcMain.handle("get-folder-size", calculateFolderSize);
 
   // For macOs
   app.on("activate", () => {
