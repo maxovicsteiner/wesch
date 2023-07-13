@@ -1,6 +1,8 @@
 // Main renderer logic
 const container = document.querySelector(".list");
 const path_input = document.getElementById("path");
+const search_input = document.getElementById("search-box");
+const back_button = document.getElementById("back-button");
 
 function createNode(file) {
   /*
@@ -45,6 +47,7 @@ function createNode(file) {
 
   node.dataset.path = file.path;
   node.dataset.type = file.type;
+  node.dataset.name = file.name;
 
   container.appendChild(node);
 
@@ -97,11 +100,9 @@ function improveReadablity(size) {
 
 async function main(path = "/") {
   try {
-    // clear the window
-    let nodes = document.querySelectorAll("div.node");
-    nodes.forEach((node) => {
-      node.remove();
-    });
+    clearList();
+
+    search_input.value = "";
 
     const files = await fs.readDir(path);
     files.forEach(async (file) => {
@@ -124,7 +125,7 @@ async function main(path = "/") {
 
       let sizeInBytes = size ? Number(size.split(",").join("")) : undefined;
 
-      if (sizeInBytes !== undefined) {
+      if (sizeInBytes !== undefined && sizeInBytes.toString() !== "NaN") {
         size = improveReadablity({
           value: sizeInBytes,
           unit: "B",
@@ -135,8 +136,17 @@ async function main(path = "/") {
     });
 
     // store last successfully visited path in localstorage
-    path_input.value = path;
-    localStorage.setItem("LAST_VISITED_SUCC", path);
+    const serializePath = (_path) => {
+      while (_path.includes("//")) {
+        _path = _path.split("//").join("/");
+      }
+      if (_path[_path.length - 1] === "/" && _path.length !== 1)
+        _path = _path.slice(0, _path.length - 1);
+      return _path;
+    };
+
+    path_input.value = serializePath(path);
+    localStorage.setItem("LAST_VISITED_SUCC", serializePath(path));
   } catch (error) {
     main(localStorage.getItem("LAST_VISITED_SUCC"));
   }
@@ -148,3 +158,31 @@ function setSize(node, size) {
 }
 
 main(localStorage.getItem("LAST_VISITED_SUCC") || "/");
+
+/// search func
+search_input.addEventListener("input", handleSearch);
+
+function handleSearch(e) {
+  const list = document.querySelectorAll("div.node");
+
+  list.forEach((item) => {
+    if (!item.dataset.name.toLowerCase().includes(e.target.value.toLowerCase()))
+      item.classList.add("hide");
+    else item.classList.remove("hide");
+  });
+}
+
+function clearList() {
+  // clear the window
+  let nodes = document.querySelectorAll("div.node");
+  nodes.forEach((node) => {
+    node.remove();
+  });
+}
+
+back_button.addEventListener("click", () => {
+  const currentPath = path_input.value;
+  const previousPath = currentPath.split("/");
+  previousPath.pop();
+  main(previousPath.join("/") + "/");
+});
