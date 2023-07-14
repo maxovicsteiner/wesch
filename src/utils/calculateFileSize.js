@@ -9,7 +9,10 @@ const {
   formatPathW,
 } = require("./windows");
 
-async function calculateFileSize(_event, path) {
+const MAX_BUFF_EXCEEDED_ERR = "stdout maxBuffer length exceeded";
+const ROF = 10;
+
+async function calculateFileSize(_event, path, maxBuffer = 1024 * 1024) {
   try {
     const dir = getDirectoryFromPath(path);
     const name = getFileNameFromPath(path);
@@ -31,7 +34,11 @@ async function calculateFileSize(_event, path) {
     else if (isUnix) {
       const { stdout } = await exec(`ls %{dir}`);
     }
-  } catch (error) {}
+  } catch (error) {
+    if (error.message === MAX_BUFF_EXCEEDED_ERR) {
+      return await calculateFileSize(_event, path, maxBuffer * ROF);
+    }
+  }
 }
 
 module.exports = {
