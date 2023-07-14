@@ -64,6 +64,7 @@ function handleDblClick(e) {
 }
 
 path_input.addEventListener("change", (e) => {
+  path_input.value = e.target.value.split("\\").join("/");
   main(e.target.value);
 });
 
