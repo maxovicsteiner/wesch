@@ -1,6 +1,9 @@
 const fs = require("fs");
 const Node = require("../classes/Node");
-const { getControllersArray } = require("../utils/calculateFolderSize");
+const {
+  getControllersArray,
+  resetControllersArray,
+} = require("../utils/calculateFolderSize");
 
 function handleReadDir(_event, path) {
   const exists = fs.existsSync(path);
@@ -12,6 +15,8 @@ function handleReadDir(_event, path) {
   getControllersArray().forEach((controller) => {
     controller.abort();
   });
+
+  resetControllersArray();
 
   const files = fs.readdirSync(path, { withFileTypes: true });
   let output = [];

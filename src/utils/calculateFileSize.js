@@ -10,7 +10,7 @@ const {
 } = require("./windows");
 
 const MAX_BUFF_EXCEEDED_ERR = "stdout maxBuffer length exceeded";
-const ROF = 10;
+const ROC = 10;
 
 async function calculateFileSize(_event, path, maxBuffer = 1024 * 1024) {
   try {
@@ -36,7 +36,7 @@ async function calculateFileSize(_event, path, maxBuffer = 1024 * 1024) {
     }
   } catch (error) {
     if (error.message === MAX_BUFF_EXCEEDED_ERR) {
-      return await calculateFileSize(_event, path, maxBuffer * ROF);
+      return await calculateFileSize(_event, path, maxBuffer * ROC);
     }
   }
 }

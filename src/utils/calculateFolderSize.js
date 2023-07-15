@@ -4,10 +4,10 @@ const exec = require("util").promisify(childProcess.exec);
 const { extractSizeFromTerminalOutputW, formatPathW } = require("./windows");
 
 const MAX_BUFF_EXCEEDED_ERR = "stdout maxBuffer length exceeded";
-const ROF = 100;
-const CONTROLLERS_ARR = [];
+const ROC = 100;
+let CONTROLLERS_ARR = [];
 
-async function calculateFolderSize(_event, dir, maxBuffer = 1024 * 1024 * ROF) {
+async function calculateFolderSize(_event, dir, maxBuffer = 1024 * 1024 * ROC) {
   try {
     // windows
     if (isWin) {
@@ -28,7 +28,7 @@ async function calculateFolderSize(_event, dir, maxBuffer = 1024 * 1024 * ROF) {
     }
   } catch (error) {
     if (error.message === MAX_BUFF_EXCEEDED_ERR) {
-      return await calculateFolderSize(_event, dir, maxBuffer * ROF);
+      return await calculateFolderSize(_event, dir, maxBuffer * ROC);
     }
   }
 }
@@ -37,7 +37,12 @@ function getControllersArray() {
   return CONTROLLERS_ARR;
 }
 
+function resetControllersArray() {
+  CONTROLLERS_ARR = [];
+}
+
 module.exports = {
   calculateFolderSize,
   getControllersArray,
+  resetControllersArray,
 };
