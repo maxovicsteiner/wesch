@@ -170,6 +170,7 @@ button.box:hover {
     color: var(--greyish-white);
     padding: 10px;
     border-radius: 3px;
+    user-select: none;
 }
 
 .node_name {

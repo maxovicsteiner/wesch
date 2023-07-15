@@ -1,5 +1,6 @@
 const fs = require("fs");
 const Node = require("../classes/Node");
+const { getControllersArray } = require("../utils/calculateFolderSize");
 
 function handleReadDir(_event, path) {
   const exists = fs.existsSync(path);
@@ -7,6 +8,10 @@ function handleReadDir(_event, path) {
   if (!exists) {
     return new Error("Directory doesn't exist or is protected");
   }
+
+  getControllersArray().forEach((controller) => {
+    controller.abort();
+  });
 
   const files = fs.readdirSync(path, { withFileTypes: true });
   let output = [];

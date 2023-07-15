@@ -34,7 +34,7 @@ function createNode(file) {
   let temp = document.createElement("span");
   temp.innerText = file.name;
   if (file.file_type !== undefined) {
-    node_type.innerText = ` (${file.file_type})`;
+    node_type.innerText = `(${file.file_type})`;
   }
   node_size.innerText = file.size;
 
@@ -50,13 +50,10 @@ function createNode(file) {
   node.dataset.name = file.name;
 
   container.appendChild(node);
-
   return node;
 }
 
-function handleDblClick(e) {
-  const { path, type } = e.target.dataset;
-
+function handleDblClick({ path, type }) {
   if (type === "DT_DIR") {
     // User clicked on a folder
     main(path);
@@ -114,10 +111,9 @@ async function main(path = "/") {
         type: file.type,
         path: file.path,
       });
-      node.addEventListener("dblclick", handleDblClick);
+      node.addEventListener("dblclick", (e) => handleDblClick(node.dataset));
 
       let size;
-
       if (file.type === "DT_REG") {
         size = await await fs.getFileSize(file.path);
       } else if (file.type === "DT_DIR") {

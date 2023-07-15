@@ -5,15 +5,20 @@ const { extractSizeFromTerminalOutputW, formatPathW } = require("./windows");
 
 const MAX_BUFF_EXCEEDED_ERR = "stdout maxBuffer length exceeded";
 const ROF = 100;
+const CONTROLLERS_ARR = [];
 
-async function calculateFolderSize(_event, dir, maxBuffer = 1024 * 1024 * 10) {
+async function calculateFolderSize(_event, dir, maxBuffer = 1024 * 1024 * ROF) {
   try {
     // windows
     if (isWin) {
+      const controller = new AbortController();
+      CONTROLLERS_ARR.push(controller);
       let command = `dir "${formatPathW(dir)}" /s`;
       const { stdout: standard } = await exec(command, {
         maxBuffer: maxBuffer,
+        signal: controller.signal,
       });
+
       let size = extractSizeFromTerminalOutputW(standard);
       return size.toString();
     }
@@ -28,6 +33,11 @@ async function calculateFolderSize(_event, dir, maxBuffer = 1024 * 1024 * 10) {
   }
 }
 
+function getControllersArray() {
+  return CONTROLLERS_ARR;
+}
+
 module.exports = {
   calculateFolderSize,
+  getControllersArray,
 };
