@@ -72,13 +72,19 @@ path_input.addEventListener("change", (e) => {
 
 // What we need is an array of units, in increasing order
 
-function improveReadablity(size) {
+function improveReadablity(size, isUnix) {
   const units = ["B", "kB", "MB", "GB", "TB"];
 
   const sizeInt = size.value.toString().split(".")[0];
 
   // 100,000 bytes
   if (sizeInt.toString().length <= 3) {
+    if (isUnix && size.value == 4 && size.unit === "kB") {
+      return {
+        value: "< 4",
+        unit: "kB",
+      };
+    }
     return size;
   }
 
@@ -93,7 +99,7 @@ function improveReadablity(size) {
     value: size.value / 1000,
     unit: units[currentUnitIndex],
   };
-  return improveReadablity(newSize);
+  return improveReadablity(newSize, isUnix);
 }
 
 async function main(path = "/") {
@@ -123,10 +129,14 @@ async function main(path = "/") {
       let sizeInBytes = size ? Number(size.split(",").join("")) : undefined;
 
       if (sizeInBytes !== undefined && sizeInBytes.toString() !== "NaN") {
-        size = improveReadablity({
-          value: sizeInBytes,
-          unit: "B",
-        });
+        const isUnix = await platform.isUnix();
+        size = improveReadablity(
+          {
+            value: sizeInBytes,
+            unit: "B",
+          },
+          isUnix
+        );
 
         setSize(node, size);
       }
@@ -150,7 +160,12 @@ async function main(path = "/") {
 }
 
 function setSize(node, size) {
-  let text = size.value.toFixed(2).replace(/\.0+$/, "") + " " + size.unit;
+  let text = "";
+  if (size.value === "< 4") {
+    text = "< 4" + " " + size.unit;
+  } else {
+    text = size.value.toFixed(2).replace(/\.0+$/, "") + " " + size.unit;
+  }
   node.querySelector(".node_size").innerText = text;
 }
 

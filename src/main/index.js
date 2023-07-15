@@ -59,6 +59,7 @@ app.on("ready", () => {
   ipcMain.handle("read-dir", handleReadDir);
   ipcMain.handle("get-file-size", calculateFileSize);
   ipcMain.handle("get-folder-size", calculateFolderSize);
+  ipcMain.handle("is-unix", () => isUnix);
 
   // For macOs
   app.on("activate", () => {

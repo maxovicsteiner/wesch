@@ -5,3 +5,7 @@ contextBridge.exposeInMainWorld("fs", {
   getFileSize: (path) => ipcRenderer.invoke("get-file-size", path),
   getFolderSize: (path) => ipcRenderer.invoke("get-folder-size", path),
 });
+
+contextBridge.exposeInMainWorld("platform", {
+  isUnix: () => ipcRenderer.invoke("is-unix"),
+});

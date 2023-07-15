@@ -8,6 +8,10 @@ const {
   extractSizeFromFileW,
   formatPathW,
 } = require("./windows");
+const {
+  extractFileFromTerminalOutputU,
+  extractSizeFromFileU,
+} = require("./unix");
 
 const MAX_BUFF_EXCEEDED_ERR = "stdout maxBuffer length exceeded";
 const ROC = 10;
@@ -32,7 +36,12 @@ async function calculateFileSize(_event, path, maxBuffer = 1024 * 1024) {
     }
     // unix (macOs + Linux)
     else if (isUnix) {
-      const { stdout } = await exec(`ls %{dir}`);
+      const { stdout } = await exec(`ls -a -s "${dir}"`);
+      const line = extractFileFromTerminalOutputU(stdout, name);
+      let size = extractSizeFromFileU(line);
+      // Convert to bytes
+      size = Number(size) * 1000;
+      return size.toString();
     }
   } catch (error) {
     if (error.message === MAX_BUFF_EXCEEDED_ERR) {
