@@ -4,6 +4,7 @@ const {
   getControllersArray,
   resetControllersArray,
 } = require("../utils/calculateFolderSize");
+const { findDotIndex } = require("../utils/findDotIndex");
 
 function handleReadDir(_event, path) {
   const exists = fs.existsSync(path);
@@ -46,6 +47,36 @@ function handleReadDir(_event, path) {
   return output;
 }
 
+async function handleCreateFile(_event, path, name) {
+  let dotIndex = findDotIndex(name);
+  if (dotIndex === null) {
+    name += ".txt";
+  }
+  dotIndex = findDotIndex(name);
+
+  let generatedPath = path + "/" + name;
+  let exists = fs.existsSync(generatedPath);
+  let temp = name;
+
+  let occurence = 1;
+  while (exists) {
+    temp = name.split(".");
+    temp[0] += ` (${occurence})`;
+    temp = temp.join(".");
+    generatedPath = path + "/" + temp;
+    occurence++;
+    exists = fs.existsSync(generatedPath);
+  }
+  name = temp;
+
+  try {
+    await require("util").promisify(fs.writeFile)(generatedPath, "");
+  } catch (error) {
+    return { error: error.message };
+  }
+}
+
 module.exports = {
+  handleCreateFile,
   handleReadDir,
 };

@@ -11,7 +11,7 @@ module.exports = {
 
 const { app, BrowserWindow, Menu, ipcMain } = require("electron");
 const path = require("path");
-const { handleReadDir } = require("./apiWrapper.js");
+const { handleReadDir, handleCreateFile } = require("./apiWrapper.js");
 const { calculateFileSize, calculateFolderSize } = require("../utils");
 require("dotenv").config();
 
@@ -59,6 +59,7 @@ app.on("ready", () => {
   ipcMain.handle("read-dir", handleReadDir);
   ipcMain.handle("get-file-size", calculateFileSize);
   ipcMain.handle("get-folder-size", calculateFolderSize);
+  ipcMain.handle("create-new-file", handleCreateFile);
   ipcMain.handle("is-unix", () => isUnix);
 
   // For macOs

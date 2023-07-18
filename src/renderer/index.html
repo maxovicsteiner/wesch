@@ -64,6 +64,23 @@
       
       <div class="list">
       </div>
+      <button id="create" title="Create">
+        <iconify-icon icon="ic:baseline-plus" width="24" height="24"></iconify-icon>
+      </button>
+      <dialog id="create_dialog" class="box">
+        <form id="create_new_form">
+          <div>
+            <input type="radio" name="type" id="file" value="File" checked/>
+            <label for="file">File</label>
+            </div>
+            <div>
+            <input type="radio" name="type" id="folder" value="Folder"/>
+            <label for="folder">Folder</label>
+          </div>
+          <input type="text" autofocus placeholder="Name of file" class="box" id="file_name_input"/>
+          <button type="submit" class="submit">Create</button>
+        </form>
+      </dialog>
     </div>
   </body>
   <script type="text/javascript">
@@ -76,6 +93,26 @@
         });
         button.classList.add("active");
       });
+    });
+
+    const radioButtons = document.querySelectorAll("input[name=\"type\"]");
+    const new_file_input = document.getElementById("file_name_input");
+
+    let choice = "";
+    function changePlaceholder(value) {
+      choice = value;
+      let text = `Name of ${choice.toLowerCase()}`;
+      if (choice === "File") text += " with extension (Default: *.txt)";
+      new_file_input.placeholder = text;    
+    }
+    radioButtons.forEach(button => {
+      if (button.checked) changePlaceholder(button.value)
+      button.addEventListener("change", (e) => {
+        if (e.target.checked)
+        { 
+          changePlaceholder(e.target.value);
+        };
+      })
     });
   </script>
   <script src="script.js"></script>

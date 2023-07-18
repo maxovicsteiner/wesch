@@ -3,6 +3,9 @@ const container = document.querySelector(".list");
 const path_input = document.getElementById("path");
 const search_input = document.getElementById("search-box");
 const back_button = document.getElementById("back-button");
+const create_button = document.getElementById("create");
+const create_dialog = document.getElementById("create_dialog");
+const create_new_form = document.getElementById("create_new_form");
 
 function createNode(file) {
   /*
@@ -197,4 +200,36 @@ back_button.addEventListener("click", () => {
   const previousPath = currentPath.split("/");
   previousPath.pop();
   main(previousPath.join("/") + "/");
+});
+create_button.addEventListener("click", () => {
+  create_dialog.showModal();
+});
+
+create_new_form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const submit_button = document.querySelector('button[type="submit"]');
+  submit_button.innerText = "Creating...";
+  submit_button.disabled = true;
+  new_file_input.disabled = true;
+  const rsp = await await fs.createFile(path_input.value, new_file_input.value);
+  if (rsp?.error) {
+    submit_button.innerText = rsp.error;
+    submit_button.classList.add("error");
+    new_file_input.disabled = true;
+    setTimeout(() => {
+      submit_button.innerText = "Create";
+      new_file_input.value = "";
+      new_file_input.disabled = false;
+      submit_button.disabled = false;
+      submit_button.classList.remove("error");
+      create_dialog.close();
+    }, 3000);
+    return;
+  }
+  submit_button.innerText = "Create";
+  submit_button.disabled = false;
+  new_file_input.disabled = false;
+  new_file_input.value = "";
+  create_dialog.close();
+  main(localStorage.getItem("LAST_SUCC_VISITED"));
 });

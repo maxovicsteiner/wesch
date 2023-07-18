@@ -7,6 +7,8 @@
     --grey: #4a4a4a;
     --white: #ffffff;
     --greyish-white: #b9b9b9;
+    --blue: #37528c;
+    --error-red: #8c3737;
 }
 
 /* Global */
@@ -200,4 +202,68 @@ button.box:hover {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+#create {
+    background-color: var(--blue);
+    color: var(--greyish-white);
+    width: max-content;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    border: none;
+    outline: none;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+}
+
+#create:hover {
+    color: var(--white);
+}
+
+dialog {
+    border: none;
+    color: white !important;
+    background-color: var(--black) !important;
+    width: 300px;
+}
+
+dialog::backdrop {
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+.submit {
+    background: var(--blue);
+    color: var(--white);
+    outline: none;
+    border: none;
+    padding: 10px 15px;
+}
+
+#create_dialog > form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+}
+
+#create_dialog > form > input[type="text"] {
+    color: var(--white) !important;
+}
+
+input[type="radio"]
+{
+    outline: none;
+}
+
+.error {
+    background-color: var(--error-red) !important;
+}
+
+*:disabled {
+    cursor:not-allowed;
 }
