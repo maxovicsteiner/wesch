@@ -48,6 +48,7 @@ function handleReadDir(_event, path) {
 }
 
 async function handleCreateFile(_event, path, name) {
+  if (path === "/") path = "";
   let dotIndex = findDotIndex(name);
   if (dotIndex === null) {
     name += ".txt";

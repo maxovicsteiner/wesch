@@ -207,6 +207,7 @@ create_button.addEventListener("click", () => {
 
 create_new_form.addEventListener("submit", async (e) => {
   e.preventDefault();
+  if (new_file_input.value.trim().length === 0) return;
   const submit_button = document.querySelector('button[type="submit"]');
   submit_button.innerText = "Creating...";
   submit_button.disabled = true;
