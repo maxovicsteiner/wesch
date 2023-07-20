@@ -5,6 +5,9 @@ const {
   resetControllersArray,
 } = require("../utils/calculateFolderSize");
 const { findDotIndex } = require("../utils/findDotIndex");
+const { promisify } = require("util");
+const { shell } = require("electron");
+const { isWin } = require(".");
 
 function handleReadDir(_event, path) {
   const exists = fs.existsSync(path);
@@ -71,7 +74,7 @@ async function handleCreateFile(_event, path, name) {
   name = temp;
 
   try {
-    await require("util").promisify(fs.writeFile)(generatedPath, "");
+    await promisify(fs.writeFile)(generatedPath, "");
   } catch (error) {
     return { error: error.message };
   }
@@ -98,7 +101,7 @@ async function handleCreateFolder(_event, path, name) {
   }
 
   try {
-    await require("util").promisify(fs.mkdir)(generatedPath, {
+    await promisify(fs.mkdir)(generatedPath, {
       recursive: true,
     });
   } catch (error) {
@@ -106,8 +109,23 @@ async function handleCreateFolder(_event, path, name) {
   }
 }
 
+async function handleOpenFile(_event, path) {
+  try {
+    let rsp = "";
+    if (isWin) {
+      rsp = await shell.openPath(path.split("/").join("\\"));
+    } else {
+      rsp = await shell.openPath(path);
+    }
+    if (rsp !== "") throw new Error(rsp);
+  } catch (error) {
+    console.log(error.message);
+  }
+}
+
 module.exports = {
   handleCreateFile,
   handleCreateFolder,
   handleReadDir,
+  handleOpenFile,
 };

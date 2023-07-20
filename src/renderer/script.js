@@ -60,7 +60,14 @@ function handleDblClick({ path, type }) {
   if (type === "DT_DIR") {
     // User clicked on a folder
     main(path);
+  } else if (type === "DT_REG") {
+    // User clicked on a file
+    open(path);
   }
+}
+
+async function open(path) {
+  await await fs.openFile(path);
 }
 
 path_input.addEventListener("change", (e) => {

@@ -15,6 +15,7 @@ const {
   handleReadDir,
   handleCreateFile,
   handleCreateFolder,
+  handleOpenFile,
 } = require("./apiWrapper.js");
 const { calculateFileSize, calculateFolderSize } = require("../utils");
 require("dotenv").config();
@@ -65,6 +66,7 @@ app.on("ready", () => {
   ipcMain.handle("get-folder-size", calculateFolderSize);
   ipcMain.handle("create-new-file", handleCreateFile);
   ipcMain.handle("create-new-folder", handleCreateFolder);
+  ipcMain.handle("open-file", handleOpenFile);
   ipcMain.handle("is-unix", () => isUnix);
 
   // For macOs

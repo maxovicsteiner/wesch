@@ -7,6 +7,7 @@ contextBridge.exposeInMainWorld("fs", {
   createFile: (path, name) => ipcRenderer.invoke("create-new-file", path, name),
   createFolder: (path, name) =>
     ipcRenderer.invoke("create-new-folder", path, name),
+  openFile: (path) => ipcRenderer.invoke("open-file", path),
 });
 
 contextBridge.exposeInMainWorld("platform", {
