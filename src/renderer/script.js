@@ -212,13 +212,18 @@ create_new_form.addEventListener("submit", async (e) => {
   submit_button.innerText = "Creating...";
   submit_button.disabled = true;
   new_file_input.disabled = true;
-  const rsp = await await fs.createFile(path_input.value, new_file_input.value);
+  let rsp;
+  if (choice === "File") {
+    rsp = await await fs.createFile(path_input.value, new_file_input.value);
+  } else if (choice === "Folder") {
+    rsp = await await fs.createFolder(path_input.value, new_file_input.value);
+  }
   if (rsp?.error) {
     submit_button.innerText = rsp.error;
     submit_button.classList.add("error");
     new_file_input.disabled = true;
     setTimeout(() => {
-      submit_button.innerText = "Create";
+      submit_button.innerText = "Create in current directory";
       new_file_input.value = "";
       new_file_input.disabled = false;
       submit_button.disabled = false;
@@ -227,7 +232,7 @@ create_new_form.addEventListener("submit", async (e) => {
     }, 3000);
     return;
   }
-  submit_button.innerText = "Create";
+  submit_button.innerText = "Create in current directory";
   submit_button.disabled = false;
   new_file_input.disabled = false;
   new_file_input.value = "";

@@ -77,7 +77,37 @@ async function handleCreateFile(_event, path, name) {
   }
 }
 
+const serializePath = (_path) => {
+  while (_path.includes("//")) {
+    _path = _path.split("//").join("/");
+  }
+  if (_path[_path.length - 1] === "/" && _path.length !== 1)
+    _path = _path.slice(0, _path.length - 1);
+  return _path;
+};
+
+async function handleCreateFolder(_event, path, name) {
+  let generatedPath = path + "/" + name;
+  if (path === "/") generatedPath = path + name;
+
+  generatedPath = serializePath(generatedPath);
+
+  const exists = fs.existsSync(generatedPath);
+  if (exists) {
+    return { error: "Directory already exists" };
+  }
+
+  try {
+    await require("util").promisify(fs.mkdir)(generatedPath, {
+      recursive: true,
+    });
+  } catch (error) {
+    return { error: error.message };
+  }
+}
+
 module.exports = {
   handleCreateFile,
+  handleCreateFolder,
   handleReadDir,
 };
