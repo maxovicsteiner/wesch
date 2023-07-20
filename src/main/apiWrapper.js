@@ -94,7 +94,7 @@ async function handleCreateFolder(_event, path, name) {
 
   const exists = fs.existsSync(generatedPath);
   if (exists) {
-    return { error: "Directory already exists" };
+    return { error: "Already exists in current directory" };
   }
 
   try {
