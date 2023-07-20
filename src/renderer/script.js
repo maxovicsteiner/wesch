@@ -4,6 +4,7 @@ const path_input = document.getElementById("path");
 const search_input = document.getElementById("search-box");
 const back_button = document.getElementById("back-button");
 const create_button = document.getElementById("create");
+const close_button = document.getElementById("close");
 const create_dialog = document.getElementById("create_dialog");
 const create_new_form = document.getElementById("create_new_form");
 
@@ -208,8 +209,17 @@ back_button.addEventListener("click", () => {
   previousPath.pop();
   main(previousPath.join("/") + "/");
 });
+
 create_button.addEventListener("click", () => {
+  create_button.style.rotate = "-45deg";
   create_dialog.showModal();
+  close_button.style.rotate = "-45deg";
+});
+
+close_button.addEventListener("click", () => {
+  create_button.style.rotate = "0deg";
+  close_button.style.rotate = "0deg";
+  create_dialog.close();
 });
 
 create_new_form.addEventListener("submit", async (e) => {
@@ -225,6 +235,9 @@ create_new_form.addEventListener("submit", async (e) => {
   } else if (choice === "Folder") {
     rsp = await await fs.createFolder(path_input.value, new_file_input.value);
   }
+
+  create_button.style.rotate = "0deg";
+  close_button.style.rotate = "0deg";
   if (rsp?.error) {
     submit_button.innerText = rsp.error;
     submit_button.classList.add("error");
@@ -245,4 +258,11 @@ create_new_form.addEventListener("submit", async (e) => {
   new_file_input.value = "";
   create_dialog.close();
   main(localStorage.getItem("LAST_SUCC_VISITED"));
+});
+
+document.addEventListener("keydown", (e) => {
+  if (create_dialog.open && e.key === "Escape") {
+    create_button.style.rotate = "0deg";
+    close_button.style.rotate = "0deg";
+  }
 });

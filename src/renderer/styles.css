@@ -204,7 +204,7 @@ button.box:hover {
     justify-content: center;
 }
 
-#create {
+.create {
     background-color: var(--blue);
     color: var(--greyish-white);
     width: max-content;
@@ -219,9 +219,10 @@ button.box:hover {
     position: fixed;
     bottom: 20px;
     right: 20px;
+    transition: rotate 0.5s ease;
 }
 
-#create:hover {
+.create:hover {
     color: var(--white);
 }
 
