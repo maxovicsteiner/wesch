@@ -92,6 +92,7 @@ button.box:hover {
 #path {
     flex: 4;
     color: var(--greyish-white);
+    padding-left: 15px;
 }
 
 #path:focus-visible {
@@ -198,10 +199,23 @@ button.box:hover {
     display: none;
 }
 
-#back-button {
+#back-button, #reload-button {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+#reload-button {
+    margin-left: -20px;
+    border-radius: 0 2px 2px 0;
+    border-left: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+#back-button {
+    margin-right: -20px;
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+    z-index: 2;
+    border-radius: 2px 0 0 2px;
 }
 
 .create {

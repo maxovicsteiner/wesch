@@ -3,6 +3,7 @@ const container = document.querySelector(".list");
 const path_input = document.getElementById("path");
 const search_input = document.getElementById("search-box");
 const back_button = document.getElementById("back-button");
+const reload_button = document.getElementById("reload-button");
 const create_button = document.getElementById("create");
 const close_button = document.getElementById("close");
 const create_dialog = document.getElementById("create_dialog");
@@ -265,4 +266,8 @@ document.addEventListener("keydown", (e) => {
     create_button.style.rotate = "0deg";
     close_button.style.rotate = "0deg";
   }
+});
+
+reload_button.addEventListener("click", () => {
+  main(path_input.value);
 });
