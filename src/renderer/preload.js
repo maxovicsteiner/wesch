@@ -12,4 +12,5 @@ contextBridge.exposeInMainWorld("fs", {
 
 contextBridge.exposeInMainWorld("platform", {
   isUnix: () => ipcRenderer.invoke("is-unix"),
+  isMac: () => ipcRenderer.invoke("is-mac"),
 });

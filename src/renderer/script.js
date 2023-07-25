@@ -84,7 +84,7 @@ path_input.addEventListener("change", (e) => {
 
 // What we need is an array of units, in increasing order
 
-function improveReadablity(size, isUnix) {
+function improveReadablity(size, isUnix, isMac) {
   const units = ["B", "kB", "MB", "GB", "TB"];
 
   const sizeInt = size.value.toString().split(".")[0];
@@ -94,6 +94,12 @@ function improveReadablity(size, isUnix) {
     if (isUnix && size.value == 4 && size.unit === "kB") {
       return {
         value: "< 4",
+        unit: "kB",
+      };
+    }
+    if (isMac && size.value == 8 && size.unit === "kB") {
+      return {
+        value: "< 8",
         unit: "kB",
       };
     }
@@ -142,12 +148,14 @@ async function main(path = "/") {
 
       if (sizeInBytes !== undefined && sizeInBytes.toString() !== "NaN") {
         const isUnix = await platform.isUnix();
+        const isMac = await platform.isMac();
         size = improveReadablity(
           {
             value: sizeInBytes,
             unit: "B",
           },
-          isUnix
+          isUnix,
+          isMac
         );
 
         setSize(node, size);
