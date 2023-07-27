@@ -6,8 +6,16 @@
     <title>Wesch File Manager</title>
   </head>
   <body>
-    <div class="left"></div>
+    <div class="left">
+      <div class="tag active-tag" data-open="file-navigation">
+        File navigation
+      </div>
+      <div class="tag" data-open="file-transfer">
+        File transfer
+      </div>
+    </div>
     <div class="right">
+      <div id="file-navigation">
       <div class="upper-container">
         <div class="inputs">
           <button class="box" id="back-button" title="Go back"><iconify-icon icon="ion:arrow-back-outline" width="15" height="15"></iconify-icon></button>
@@ -75,8 +83,8 @@
           <div>
             <input type="radio" name="type" id="file" value="File" checked/>
             <label for="file">File</label>
-            </div>
-            <div>
+          </div>
+          <div>
             <input type="radio" name="type" id="folder" value="Folder"/>
             <label for="folder">Folder</label>
           </div>
@@ -87,6 +95,22 @@
           <iconify-icon icon="ic:baseline-plus" width="24" height="24"></iconify-icon>
         </button>
       </dialog>
+    </div>
+    <div id="file-transfer">
+      <form id="file_transfer_form">
+        <div>
+          <input type="radio" name="role" id="sender" value="Sender" checked/>
+          <label for="sender">Sender</label>
+        </div>
+        <div>
+          <input type="radio" name="role" id="receiver" value="Receiver"/>
+          <label for="receiver">Receiver</label>
+        </div>
+        <input type="text" readonly class="box" id="roomID" placeholder="Enter code"/>
+        <input type="text" autofocus placeholder="Path of file" class="box" required id="file_path"/>
+        <button type="submit" class="submit" id="transfer_file_btn">Ready to send</button>
+      </form>
+    </div>
     </div>
   </body>
   <script type="text/javascript">
@@ -101,17 +125,17 @@
       });
     });
 
-    const radioButtons = document.querySelectorAll("input[name=\"type\"]");
+    const typeRadioButtons = document.querySelectorAll("input[name=\"type\"]");
     const new_file_input = document.getElementById("file_name_input");
 
-    let choice = "";
+    let type_choice = "";
     function changePlaceholder(value) {
-      choice = value;
-      let text = `Name of ${choice.toLowerCase()}`;
-      if (choice === "File") text += " with extension (Default: *.txt)";
+      type_choice = value;
+      let text = `Name of ${type_choice.toLowerCase()}`;
+      if (type_choice === "File") text += " with extension (Default: *.txt)";
       new_file_input.placeholder = text;    
     }
-    radioButtons.forEach(button => {
+    typeRadioButtons.forEach(button => {
       if (button.checked) changePlaceholder(button.value)
       button.addEventListener("change", (e) => {
         if (e.target.checked)
@@ -120,6 +144,89 @@
         };
       })
     });
+
+
+      const sections = document.querySelectorAll(".tag");
+      let activeSection = document.querySelector(".active-tag");
+      sections.forEach(tag => {
+        let section = document.getElementById(tag.dataset.open)
+        section.classList.add("hide");
+        tag.onclick = handleTagClick;
+      })
+
+      let selected = document.getElementById(activeSection.dataset.open);
+      selected.classList.remove("hide")
+      
+      
+    function handleTagClick(e) {
+      activeSection = e.target;
+      sections.forEach(tag => {
+        let section = document.getElementById(tag.dataset.open)
+        section.classList.add("hide");
+        tag.onclick = handleTagClick;
+      })
+
+      let selected = document.getElementById(activeSection.dataset.open);
+      selected.classList.remove("hide")
+    }
+
+    const roleRadioButtons = document.querySelectorAll("input[name=\"role\"]")
+    const btnTransferFile = document.getElementById("transfer_file_btn")
+    const filePathInput = document.getElementById("file_path")
+    const roomId = document.getElementById("roomID");
+    let code = "";
+    let role_choice = "";
+
+    function changeForm(value) {
+      role_choice = value;
+      if (value === "Receiver")
+      {
+        roomId.value = "";
+        roomId.readOnly = false;
+        roomId.placeholder = "Enter code";
+        roomId.setAttribute("required", true);
+        roomId.setAttribute("title", "");
+        btnTransferFile.innerText = "Ready to receive";
+        filePathInput.classList.add("hide")
+      } else if (value === "Sender")
+      {
+        roomId.onclick = handleCopy;
+        roomId.value = code;
+        roomId.readOnly = true;
+        roomId.placeholder = "Loading code...";
+        roomId.setAttribute("required", false);
+        roomId.setAttribute("title", "Click to copy code")
+        btnTransferFile.innerText = "Ready to send";
+        filePathInput.classList.remove("hide")
+      }
+    }
+
+    async function handleCopy(e) {
+      if (role_choice === "Sender" && code.trim() !== "" && code.value !== "Copied!") {
+        try {
+          await navigator.clipboard.writeText(code);
+          roomId.value = "Copied!"
+          setTimeout(() => {
+            if (role_choice === "Sender"){
+              roomId.value = code;
+            }
+          }, 2000);
+        } catch (error) {
+          alert("Could not copy code");
+        }
+      }
+    }
+
+    roleRadioButtons.forEach(button => {
+      if (button.checked) changeForm(button.value)
+      button.addEventListener("change", (e) => {
+        if (e.target.checked)
+        { 
+          changeForm(e.target.value);
+        };
+      })
+    });
   </script>
-  <script src="script.js"></script>
+  <script src="js/file-navigation.js"></script>
+  <script src="js/file-transfer.js"></script>
 </html>

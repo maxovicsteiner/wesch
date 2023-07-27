@@ -15,6 +15,7 @@
 *{
     font-size: 14px;
     font-family: 'Roboto', sans-serif;
+    /* color: var(--white); */
     /* transition: 0.2s ease; */
 }
 
@@ -259,7 +260,7 @@ dialog::backdrop {
     padding: 10px 15px;
 }
 
-#create_dialog > form {
+#create_dialog > form, #file_transfer_form {
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -281,4 +282,23 @@ input[type="radio"]
 
 *:disabled {
     cursor:not-allowed;
+}
+
+#roomID, #file_path {
+    color: var(--white);
+}
+
+input[readonly]
+{
+    color: var(--greyish-white)!important;
+    cursor: pointer;
+}
+
+label {
+    color: var(--white);
+}
+
+.tag {
+    color: var(--white);
+    cursor: pointer;
 }

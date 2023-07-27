@@ -9,14 +9,15 @@
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish",
-    "lint": "echo \"No linting configured\"",
-    "dev": "electronmon ."
+    "server": "nodemon ./src/server/index.js"
   },
   "keywords": [],
   "author": "Haydar Hamieh",
   "license": "MIT",
   "dependencies": {
-    "electron-squirrel-startup": "^1.0.0"
+    "electron-squirrel-startup": "^1.0.0",
+    "uuid": "^9.0.0",
+    "ws": "^8.13.0"
   },
   "devDependencies": {
     "@electron-forge/cli": "^6.2.1",
@@ -27,6 +28,7 @@
     "@electron-forge/plugin-auto-unpack-natives": "^6.2.1",
     "dotenv": "^16.3.1",
     "electron": "25.2.0",
-    "electronmon": "^2.0.2"
+    "electronmon": "^2.0.2",
+    "nodemon": "^3.0.1"
   }
 }
