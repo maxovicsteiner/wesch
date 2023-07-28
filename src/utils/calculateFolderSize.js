@@ -27,7 +27,7 @@ async function calculateFolderSize(_event, dir, maxBuffer = 1024 * 1024 * ROC) {
     else if (isUnix) {
       const controller = new AbortController();
       CONTROLLERS_ARR.push(controller);
-      let command = `du "${dir}" -s`;
+      let command = `du -s "${dir}"`;
       const { stdout } = await exec(command, {
         maxBuffer: maxBuffer,
         signal: controller.signal,

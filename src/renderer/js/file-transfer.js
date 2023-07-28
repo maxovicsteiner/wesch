@@ -3,11 +3,12 @@ const ws = new WebSocket("ws://localhost:8080");
 
 let receiverReady = false,
   senderReady = false,
+  offerCreated = false,
   rtcPeerConnection;
 
 ws.onmessage = handleRespone;
 
-const iceServer = {
+const iceServers = {
   iceServer: [
     { urls: "stun:stun.services.mozilla.com" },
     { urls: "stun:stun.l.google.com:19302" },
@@ -30,6 +31,14 @@ function handleRespone({ data }) {
     case "error-message":
       handleErrorMessage(body);
       break;
+    case "candidate":
+      handleCandidate(body);
+      break;
+    case "offer":
+      createAnswer(body);
+      break;
+    case "answer":
+      handleAnswer(body);
     default:
       break;
   }
@@ -93,10 +102,84 @@ function handleSenderReady() {
 }
 
 function createOffer() {
-  console.log("offer created");
+  if (offerCreated) return;
+  offerCreated = true;
+  rtcPeerConnection = new RTCPeerConnection(iceServers);
+  rtcPeerConnection.onicecandidate = iceCandidateHandler;
+  rtcPeerConnection
+    .createOffer()
+    .then((sessionDescription) => {
+      rtcPeerConnection.setLocalDescription(sessionDescription);
+      const data = {
+        name: "offer",
+        body: {
+          sdp: sessionDescription,
+          room: roomId.value,
+        },
+      };
+      ws.send(JSON.stringify(data));
+      console.log("offer created");
+    })
+    .catch((err) => {
+      console.log(err.message);
+    });
+}
+
+function createAnswer({ sdp }) {
+  rtcPeerConnection = new RTCPeerConnection(iceServers);
+  rtcPeerConnection.onicecandidate = iceCandidateHandler;
+  rtcPeerConnection.setRemoteDescription(new RTCSessionDescription(sdp));
+  rtcPeerConnection
+    .createAnswer()
+    .then((sessionDescription) => {
+      rtcPeerConnection.setLocalDescription(sessionDescription);
+      const data = {
+        name: "answer",
+        body: {
+          sdp: sessionDescription,
+          room: roomId.value,
+        },
+      };
+      ws.send(JSON.stringify(data));
+      console.log("answer created");
+    })
+    .catch((err) => {
+      console.log(err.message);
+    });
 }
 
 function handleErrorMessage(body) {
   const { message } = body;
   alert("Error: " + message);
+}
+
+function iceCandidateHandler({ candidate }) {
+  if (candidate) {
+    console.log(candidate);
+    let data = {
+      name: "candidate",
+      body: {
+        label: candidate.sdpMLineIndex,
+        id: candidate.sdpMid,
+        candidate: candidate.candidate,
+        emitter: role_choice,
+        room: roomId.value,
+      },
+    };
+    ws.send(JSON.stringify(data));
+  }
+}
+
+function handleCandidate(body) {
+  const candidate = new RTCIceCandidate({
+    sdpMLineIndex: body.label,
+    candidate: body.candidate,
+  });
+
+  rtcPeerConnection.addIceCandidate(candidate);
+}
+
+function handleAnswer({ sdp }) {
+  rtcPeerConnection.setRemoteDescription(new RTCSessionDescription(sdp));
+  console.log("thats it, its done");
 }

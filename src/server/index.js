@@ -26,12 +26,6 @@ class Room {
   }
 }
 
-wss.broadcast = (message) => {
-  wss.clients.forEach((client) => {
-    client.send(message);
-  });
-};
-
 let rooms = new Map();
 
 wss.on("connection", (socket) => {
@@ -58,6 +52,16 @@ wss.on("connection", (socket) => {
         break;
       case "sender-ready":
         socket.send(handleSenderReady(body));
+        break;
+      case "offer":
+        handleOffer(body);
+        break;
+      case "answer":
+        handleAnswer(body);
+        break;
+      case "candidate":
+        handleCandidate(body);
+        break;
       default:
         break;
     }
@@ -100,7 +104,7 @@ function handleSenderReady(body) {
     };
     if (room.receiver) {
       room.receiver.send(JSON.stringify(res));
-      return "{}";
+      // return "{}";
     }
   } //do something
   else {
@@ -112,4 +116,42 @@ function handleSenderReady(body) {
     };
   }
   return JSON.stringify(res);
+}
+
+function handleOffer(body) {
+  const { sdp, room } = body;
+  const res = {
+    name: "offer",
+    body: {
+      sdp: sdp,
+    },
+  };
+  rooms.get(room).receiver.send(JSON.stringify(res));
+}
+
+function handleCandidate(body) {
+  const { emitter, room } = body;
+  const res = {
+    name: "candidate",
+    body: {
+      label: body.label,
+      id: body.id,
+      candidate: body.candidate,
+    },
+  };
+  if (emitter === "Sender") rooms.get(room).receiver.send(JSON.stringify(res));
+  else if (emitter === "Receiver")
+    rooms.get(room).sender.send(JSON.stringify(res));
+}
+
+function handleAnswer(body) {
+  const { sdp, room } = body;
+
+  const res = {
+    name: "answer",
+    body: {
+      sdp: sdp,
+    },
+  };
+  rooms.get(room).sender.send(JSON.stringify(res));
 }

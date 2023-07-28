@@ -68,6 +68,7 @@ app.on("ready", () => {
   ipcMain.handle("create-new-folder", handleCreateFolder);
   ipcMain.handle("open-file", handleOpenFile);
   ipcMain.handle("is-unix", () => isUnix);
+  ipcMain.handle("is-mac", () => isMac);
 
   // For macOs
   app.on("activate", () => {
