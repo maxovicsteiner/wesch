@@ -106,14 +106,18 @@
           <input type="radio" name="role" id="receiver" value="Receiver"/>
           <label for="receiver">Receiver</label>
         </div>
-        <input type="text" readonly class="box" id="roomID" placeholder="Enter code"/>
+        <input type="text" readonly class="box" id="bucket_id" placeholder="Enter code"/>
         <input type="text" autofocus placeholder="Path of file" class="box" required id="file_path"/>
-        <button type="submit" class="submit" id="transfer_file_btn">Ready to send</button>
+        <h1 id="status"></h1>
+        <button type="submit" class="submit" id="create_or_inspect_bucket">Create bucket</button>
+        <p id="error"></p>
       </form>
     </div>
     </div>
   </body>
   <script type="text/javascript">
+    "use strict";
+
     // for ui
     const viewButtons = document.querySelectorAll(".view > button");
     viewButtons.forEach((button) => {
@@ -146,16 +150,16 @@
     });
 
 
-      const sections = document.querySelectorAll(".tag");
-      let activeSection = document.querySelector(".active-tag");
-      sections.forEach(tag => {
-        let section = document.getElementById(tag.dataset.open)
-        section.classList.add("hide");
-        tag.onclick = handleTagClick;
-      })
+    const sections = document.querySelectorAll(".tag");
+    let activeSection = document.querySelector(".active-tag");
+    sections.forEach(tag => {
+      let section = document.getElementById(tag.dataset.open)
+      section.classList.add("hide");
+      tag.onclick = handleTagClick;
+    })
 
-      let selected = document.getElementById(activeSection.dataset.open);
-      selected.classList.remove("hide")
+    let selected = document.getElementById(activeSection.dataset.open);
+    selected.classList.remove("hide")
       
       
     function handleTagClick(e) {
@@ -171,46 +175,88 @@
     }
 
     const roleRadioButtons = document.querySelectorAll("input[name=\"role\"]")
-    const btnTransferFile = document.getElementById("transfer_file_btn")
+    const actionButton = document.getElementById("create_or_inspect_bucket");
     const filePathInput = document.getElementById("file_path")
-    const roomId = document.getElementById("roomID");
+    const bucket_id = document.getElementById("bucket_id");
+    const statusPlaceholder = document.getElementById("status");
     let code = "";
     let role_choice = "";
+
+    /**
+     * 
+     * @param {string} page
+     * 
+     * */
+    function display(page) {
+      actionButton.removeAttribute("disabled");
+      switch(page) {
+        case "join":
+          bucket_id.value = "";
+          bucket_id.readOnly = false;
+          bucket_id.placeholder = "Enter code";
+          bucket_id.setAttribute("required", true);
+          bucket_id.setAttribute("title", "");
+          actionButton.innerText = "Inspect bucket";
+          filePathInput.classList.add("hide");
+          statusPlaceholder.classList.add("hide");
+          break;
+        case "create":
+          bucket_id.onclick = handleCopy;
+          bucket_id.value = code;
+          bucket_id.readOnly = true;
+          bucket_id.placeholder = "Loading code...";
+          bucket_id.setAttribute("required", false);
+          bucket_id.setAttribute("title", "Click to copy code")
+          actionButton.innerText = "Create bucket";
+          filePathInput.classList.add("hide");
+          statusPlaceholder.classList.add("hide");
+          break;
+        case "download":
+          statusPlaceholder.classList.remove("hide");
+          statusPlaceholder.innerText = "Bucket status: loading...";
+          bucket_id.setAttribute("readonly", true);
+          actionButton.innerText = "Download content when ready";
+          break;
+        case "upload":
+          statusPlaceholder.classList.add("hide");
+          filePathInput.classList.remove("hide")
+          bucket_id.setAttribute("readonly", true);
+          actionButton.innerText = "Upload file(s)"
+          break;
+        default:
+          break;
+      }
+    }
 
     function changeForm(value) {
       role_choice = value;
       if (value === "Receiver")
       {
-        roomId.value = "";
-        roomId.readOnly = false;
-        roomId.placeholder = "Enter code";
-        roomId.setAttribute("required", true);
-        roomId.setAttribute("title", "");
-        btnTransferFile.innerText = "Ready to receive";
-        filePathInput.classList.add("hide")
+        display("join")
       } else if (value === "Sender")
       {
-        roomId.onclick = handleCopy;
-        roomId.value = code;
-        roomId.readOnly = true;
-        roomId.placeholder = "Loading code...";
-        roomId.setAttribute("required", false);
-        roomId.setAttribute("title", "Click to copy code")
-        btnTransferFile.innerText = "Ready to send";
-        filePathInput.classList.remove("hide")
+        display("create");
       }
+    }
+
+    let previousCopiedTimeout = null;
+    function handleCopiedMessage() {
+      bucket_id.value = "Copied!";
+      if (previousCopiedTimeout) clearTimeout(previousCopiedTimeout);
+      const currentCopiedTimeout = setTimeout(() => {
+        if (role_choice === "Sender"){
+          bucket_id.value = code;
+        }
+        if (previousCopiedTimeout === currentCopiedTimeout) previousCopiedTimeout = null;
+      }, 2000);
+      previousCopiedTimeout = currentCopiedTimeout;
     }
 
     async function handleCopy(e) {
       if (role_choice === "Sender" && code.trim() !== "" && code.value !== "Copied!") {
         try {
           await navigator.clipboard.writeText(code);
-          roomId.value = "Copied!"
-          setTimeout(() => {
-            if (role_choice === "Sender"){
-              roomId.value = code;
-            }
-          }, 2000);
+          handleCopiedMessage();
         } catch (error) {
           alert("Could not copy code");
         }
@@ -226,6 +272,29 @@
         };
       })
     });
+
+    function changeStatusPlaceholder(status) {
+      let t = "Bucket status: ";
+      switch (status) {
+        case "T_OPEN":
+          t += "Empty - Sender has not yet uploaded the files";
+          statusPlaceholder.dataset.value = "empty";
+          break;
+        case "T_READY":
+          t += "Ready - Bucket content is ready to be downloaded";
+          statusPlaceholder.dataset.value = "ready";
+          break;
+        case "T_UPLOADING":
+          t += "Uploading - Sender is uploading the files, please wait";
+          statusPlaceholder.dataset.value = "uploading";
+          break;
+        default:
+          break;
+      }
+      statusPlaceholder.innerText = t;
+    }
+
+    const errorMessage = document.getElementById("error");
   </script>
   <script src="js/file-navigation.js"></script>
   <script src="js/file-transfer.js"></script>

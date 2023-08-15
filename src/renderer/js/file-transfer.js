@@ -1,185 +1,137 @@
+"use strict";
+
 // The contents of this file are responsible for the webRTC based p2p file sharing feature
 const ws = new WebSocket("ws://localhost:8080");
 
-let receiverReady = false,
-  senderReady = false,
-  offerCreated = false,
-  rtcPeerConnection;
+/**
+ *
+ * @param {string} name
+ * @param {any} body
+ * @returns string
+ */
+function generateSocketMessage(name, body) {
+  return JSON.stringify({
+    name,
+    body,
+  });
+}
 
-ws.onmessage = handleRespone;
+/**
+ *
+ * @param {string} val
+ */
+function lockRoleChoice(val) {
+  roleRadioButtons.forEach((button) => {
+    if (button.value !== val) button.setAttribute("disabled", true);
+  });
+}
 
-const iceServers = {
-  iceServer: [
-    { urls: "stun:stun.services.mozilla.com" },
-    { urls: "stun:stun.l.google.com:19302" },
-  ],
+let previousErrorTimeout = null;
+/**
+ *
+ * @param {string} message
+ */
+function displayError(message) {
+  errorMessage.innerText = message;
+  if (previousErrorTimeout) clearTimeout(previousErrorTimeout);
+  const currentTimeout = setTimeout(() => {
+    errorMessage.innerText = "";
+    actionButton.removeAttribute("disabled");
+    if (previousErrorTimeout === currentTimeout) previousErrorTimeout = null;
+  }, 3000);
+  previousErrorTimeout = currentTimeout;
+}
+
+ws.onmessage = handleResponse;
+
+ws.onopen = () => {
+  let req = generateSocketMessage("get-code", {});
+  ws.send(req);
 };
 
-function handleRespone({ data }) {
+function handleResponse({ data }) {
   if (data.toString() === "{}") return;
   const { name, body } = JSON.parse(data);
   switch (name) {
     case "get-code":
-      handleGetCode(body);
+      handleGetCodeEvent(body);
       break;
-    case "receiver-ready":
-      handleReceiverReady();
+    case "bucket-created":
+      handleBucketCreatedEvent(body);
       break;
-    case "sender-ready":
-      handleSenderReady();
+    case "joined-bucket":
+      handleJoinedBucketEvent(body);
+      break;
+    case "file-uploaded":
+      handleFileUploadedEvent(body);
+      break;
+    case "status-updated":
+      handleStatusUpdated(body);
       break;
     case "error-message":
       handleErrorMessage(body);
       break;
-    case "candidate":
-      handleCandidate(body);
-      break;
-    case "offer":
-      createAnswer(body);
-      break;
-    case "answer":
-      handleAnswer(body);
     default:
       break;
   }
 }
 
-ws.onopen = () => {
-  if (role_choice === "Sender") {
-    const data = {
-      name: "get-code",
-      body: {},
-    };
-    ws.send(JSON.stringify(data));
-  }
-};
-
-btnTransferFile.onclick = (e) => {
+actionButton.onclick = (e) => {
   e.preventDefault();
-  if (role_choice === "Sender") {
-    if (filePathInput.value.trim() === "") return;
-    const data = {
-      name: "sender-ready",
-      body: {
-        code: code,
-      },
-    };
-    ws.send(JSON.stringify(data));
-  } else if (role_choice === "Receiver") {
-    const data = {
-      name: "join-room",
-      body: {
-        code: roomId.value,
-      },
-    };
-    ws.send(JSON.stringify(data));
+  let req;
+  switch (e.target.innerText) {
+    case "Create bucket":
+      req = generateSocketMessage("create-bucket", { code });
+      actionButton.setAttribute("disabled", true);
+      // actionButton.innerText = "Creating...";
+      break;
+    case "Inspect bucket":
+      req = generateSocketMessage("join-bucket", { code });
+      actionButton.setAttribute("disabled", true);
+      // actionButton.innerText = "Joining...";
+      break;
+    case "Upload file(s)":
+      req = generateSocketMessage("upload-files", {
+        code,
+        file:
+          filePathInput.value.trim().length > 0 ? filePathInput.value : null,
+      });
+      actionButton.setAttribute("disabled", true);
+      // actionButton.innerText = "Uploading...";
+      break;
+    default:
+      break;
   }
+  if (req) ws.send(req);
 };
 
-function handleGetCode(body) {
-  const { code: _code } = body;
-  roomId.value = _code;
-  // the next line works i dont know why do not fucking remove it
-  code = _code;
-}
+const handleGetCodeEvent = ({ code: _code }) => {
+  bucket_id.value = _code;
+  code = _code; // ignore warning
+};
 
-function handleReceiverReady() {
-  receiverReady = true;
-  if (senderReady) createOffer();
-}
+const handleBucketCreatedEvent = () => {
+  lockRoleChoice("Sender");
+  display("upload");
+};
 
-function handleSenderReady() {
-  senderReady = true;
-  if (receiverReady) {
-    let res = {
-      name: "join-room",
-      body: {
-        code: code,
-      },
-    };
-    ws.send(JSON.stringify(res));
-  }
-}
+const handleJoinedBucketEvent = (body) => {
+  const { status } = body;
+  lockRoleChoice("Receiver");
+  display("download");
+  changeStatusPlaceholder(status);
+};
 
-function createOffer() {
-  if (offerCreated) return;
-  offerCreated = true;
-  rtcPeerConnection = new RTCPeerConnection(iceServers);
-  rtcPeerConnection.onicecandidate = iceCandidateHandler;
-  rtcPeerConnection
-    .createOffer()
-    .then((sessionDescription) => {
-      rtcPeerConnection.setLocalDescription(sessionDescription);
-      const data = {
-        name: "offer",
-        body: {
-          sdp: sessionDescription,
-          room: roomId.value,
-        },
-      };
-      ws.send(JSON.stringify(data));
-      console.log("offer created");
-    })
-    .catch((err) => {
-      console.log(err.message);
-    });
-}
+const handleFileUploadedEvent = (body) => {
+  console.log(body.result);
+};
 
-function createAnswer({ sdp }) {
-  rtcPeerConnection = new RTCPeerConnection(iceServers);
-  rtcPeerConnection.onicecandidate = iceCandidateHandler;
-  rtcPeerConnection.setRemoteDescription(new RTCSessionDescription(sdp));
-  rtcPeerConnection
-    .createAnswer()
-    .then((sessionDescription) => {
-      rtcPeerConnection.setLocalDescription(sessionDescription);
-      const data = {
-        name: "answer",
-        body: {
-          sdp: sessionDescription,
-          room: roomId.value,
-        },
-      };
-      ws.send(JSON.stringify(data));
-      console.log("answer created");
-    })
-    .catch((err) => {
-      console.log(err.message);
-    });
-}
+const handleStatusUpdatedEvent = (body) => {
+  const { status } = body;
+  changeStatusPlaceholder(status);
+};
 
-function handleErrorMessage(body) {
+const handleErrorMessage = (body) => {
   const { message } = body;
-  alert("Error: " + message);
-}
-
-function iceCandidateHandler({ candidate }) {
-  if (candidate) {
-    console.log(candidate);
-    let data = {
-      name: "candidate",
-      body: {
-        label: candidate.sdpMLineIndex,
-        id: candidate.sdpMid,
-        candidate: candidate.candidate,
-        emitter: role_choice,
-        room: roomId.value,
-      },
-    };
-    ws.send(JSON.stringify(data));
-  }
-}
-
-function handleCandidate(body) {
-  const candidate = new RTCIceCandidate({
-    sdpMLineIndex: body.label,
-    candidate: body.candidate,
-  });
-
-  rtcPeerConnection.addIceCandidate(candidate);
-}
-
-function handleAnswer({ sdp }) {
-  rtcPeerConnection.setRemoteDescription(new RTCSessionDescription(sdp));
-  console.log("thats it, its done");
-}
+  displayError(message);
+};

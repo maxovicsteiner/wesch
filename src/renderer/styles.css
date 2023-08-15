@@ -8,7 +8,11 @@
     --white: #ffffff;
     --greyish-white: #b9b9b9;
     --blue: #37528c;
-    --error-red: #8c3737;
+    --error-red-box: #8c3737;
+    --error-red-text: #f04545;
+    --loading-purple-text: #e245f0;
+    --success-green-text: #6df045;
+    --disabled-grey: #727272;
 }
 
 /* Global */
@@ -277,14 +281,18 @@ input[type="radio"]
 }
 
 .error {
-    background-color: var(--error-red) !important;
+    background-color: var(--error-red-box) !important;
 }
 
 *:disabled {
     cursor:not-allowed;
 }
 
-#roomID, #file_path {
+button:disabled {
+    background-color: var(--disabled-grey)
+}
+
+#bucket_id, #file_path {
     color: var(--white);
 }
 
@@ -301,4 +309,24 @@ label {
 .tag {
     color: var(--white);
     cursor: pointer;
+}
+
+#error {
+    color: var(--error-red-text)
+}
+
+#status {
+    font-weight: 500;
+}
+
+#status[data-value="empty"] {
+    color: var(--error-red-text) !important;
+}
+
+#status[data-value="ready"] {
+    color: var(--success-green-text) !important;
+}
+
+#status[data-value="uploading"] {
+    color: var(--loading-purple-text) !important;
 }

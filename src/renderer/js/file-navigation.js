@@ -1,3 +1,5 @@
+"use strict";
+
 // Main renderer logic
 const container = document.querySelector(".list");
 const path_input = document.getElementById("path");
@@ -239,9 +241,9 @@ create_new_form.addEventListener("submit", async (e) => {
   submit_button.disabled = true;
   new_file_input.disabled = true;
   let rsp;
-  if (choice === "File") {
+  if (type_choice === "File") {
     rsp = await await fs.createFile(path_input.value, new_file_input.value);
-  } else if (choice === "Folder") {
+  } else if (type_choice === "Folder") {
     rsp = await await fs.createFolder(path_input.value, new_file_input.value);
   }
 
