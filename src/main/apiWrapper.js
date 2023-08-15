@@ -123,9 +123,21 @@ async function handleOpenFile(_event, path) {
   }
 }
 
+async function handleGetFileBytes(_event, path) {
+  try {
+    const bytes = await promisify(fs.readFile)(path);
+    return bytes;
+  } catch (error) {
+    return {
+      error: `Upload error - File could not be uploaded (${error.message})`,
+    };
+  }
+}
+
 module.exports = {
   handleCreateFile,
   handleCreateFolder,
   handleReadDir,
   handleOpenFile,
+  handleGetFileBytes,
 };

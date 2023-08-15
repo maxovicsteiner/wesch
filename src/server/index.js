@@ -25,6 +25,9 @@ wss.on("connection", (socket) => {
       case "join-bucket":
         handleJoinBucketEvent(body, socket);
         break;
+      case "change-status":
+        handleChangeStatusEvent(body, socket);
+        break;
       case "upload-files":
         handleUploadFilesEvent(body, socket);
         break;
@@ -56,6 +59,7 @@ const handleCreateBucketEvent = (body, socket) => {
 const handleJoinBucketEvent = (body, socket) => {
   const { code } = body;
   const bucket = buckets.get(code);
+  console.log(buckets, code);
   let res;
   if (!bucket) {
     res = generateSocketMessage("error-message", {
@@ -69,49 +73,37 @@ const handleJoinBucketEvent = (body, socket) => {
   socket.send(res);
 };
 
-const handleUploadFilesEvent = async (body, socket) => {
-  const { code, file } = body;
-  let res;
-  if (!file) {
-    res = generateSocketMessage("error-message", {
-      message: "Invalid file - Please enter the file path before uploading",
-    });
-    socket.send(res);
-    return;
-  }
+const handleUploadFilesEvent = (body, socket) => {
+  const { code, bytes } = body;
   const bucket = buckets.get(code);
+  let res;
   if (!bucket) {
     res = generateSocketMessage("error-message", {
-      message: "Invalid bucket - An error happened please try again later",
+      message: "Invalid bucket - Bucket was not found",
     });
     socket.send(res);
     return;
   }
-  if (!fs.existsSync(file)) {
+
+  bucket.uploadFile(bytes);
+  bucket.updateStatus(T_READY); // socket response gets sent in the method itself
+  console.log(bucket.T_RES);
+  return;
+};
+
+const handleChangeStatusEvent = (body, socket) => {
+  const { code, status } = body;
+  const bucket = buckets.get(code);
+  let res;
+  if (!bucket) {
     res = generateSocketMessage("error-message", {
-      message: "Invalid file - No file has been found at the given path",
+      message: "Invalid bucket - Bucket was not found",
     });
     socket.send(res);
     return;
   }
-  bucket.updateStatus(T_UPLOADING);
-  try {
-    const bytes = await getFileBytes(file);
-    bucket.updateStatus(T_READY);
-    bucket.uploadFile(bytes);
-    res = generateSocketMessage("file-uploaded", {
-      result: bucket.T_RES,
-    });
-    socket.send(res);
-    return;
-  } catch (error) {
-    bucket.updateStatus(T_OPEN);
-    res = generateSocketMessage("error-message", {
-      message: `Invalid file - Could not read file (${error.message})`,
-    });
-    socket.send(res);
-    return;
-  }
+  bucket.updateStatus(status); // socket response gets sent in the method itself
+  return;
 };
 
 console.log("WebSocket server listening on 8080");
