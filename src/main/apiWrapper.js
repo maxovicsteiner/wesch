@@ -9,6 +9,7 @@ const { promisify } = require("util");
 const { shell } = require("electron");
 const { isWin } = require(".");
 const { getFileNameFromPath } = require("../utils");
+const downloadsFolder = require("downloads-folder");
 
 function handleReadDir(_event, path) {
   const exists = fs.existsSync(path);
@@ -138,10 +139,19 @@ async function handleGetFileBytes(_event, _path) {
   }
 }
 
+async function handleDownloadFile(_event, content, name) {
+  try {
+    const downloadsPath = serializePath(downloadsFolder());
+    const completePath = downloadsPath + "/" + name;
+    await fs.writeFile(completePath, content.toString());
+  } catch (error) {}
+}
+
 module.exports = {
   handleCreateFile,
   handleCreateFolder,
   handleReadDir,
   handleOpenFile,
   handleGetFileBytes,
+  handleDownloadFile,
 };

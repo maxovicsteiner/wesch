@@ -32,7 +32,7 @@ class Bucket {
    * @param {Array} bin_data
    */
   uploadFile(bin_data, name) {
-    this.T_RES = Buffer.from(bin_data);
+    this.T_RES = Buffer.from(Object.values(bin_data));
     this.T_STRUCT = name;
   }
 
@@ -49,7 +49,10 @@ class Bucket {
   }
 
   get file() {
-    return this.T_RES;
+    return {
+      file: this.T_RES,
+      name: this.T_STRUCT,
+    };
   }
 }
 

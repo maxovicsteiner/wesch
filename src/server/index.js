@@ -2,11 +2,7 @@ const WebSocket = require("ws");
 const wss = new WebSocket.Server({ port: 8080, clientTracking: true });
 const uuid = require("uuid");
 const { generateSocketMessage } = require("../utils/generateSocketMessage");
-const { Bucket, T_OPEN, T_READY, T_UPLOADING } = require("../classes/Bucket");
-const fs = require("fs");
-const util = require("util");
-
-const getFileBytes = util.promisify(fs.readFile);
+const { Bucket, T_READY } = require("../classes/Bucket");
 
 let usedCodes = new Set();
 let buckets = new Map();
@@ -88,7 +84,7 @@ const handleUploadFilesEvent = (body, socket) => {
   }
   if (response.error) {
     res = generateSocketMessage("error-message", {
-      message: `Upload error - File could not be uploaded (${bytes.error})`,
+      message: `${bytes.error}`,
     });
     socket.send(res);
     return;

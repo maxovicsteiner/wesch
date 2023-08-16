@@ -141,14 +141,16 @@ const handleStatusUpdatedEvent = (body) => {
   const { status } = body;
   changeStatusPlaceholder(status);
   if (status === T_READY) {
-    let req = generateSocketMessage("get-file", { code });
+    let req = generateSocketMessage("get-file", {
+      code: bucket_id.value.trim(),
+    });
     ws.send(req);
   }
 };
 
-const handleFileGottenEvent = (body) => {
+const handleFileGottenEvent = async (body) => {
   const { file } = body;
-  console.log(file);
+  await fs.downloadFile(file.file, file.name);
 };
 
 const handleErrorMessage = (body) => {
