@@ -141,9 +141,9 @@ async function handleGetFileBytes(_event, _path) {
 
 async function handleDownloadFile(_event, content, name) {
   try {
-    const downloadsPath = serializePath(downloadsFolder());
-    const completePath = downloadsPath + "/" + name;
-    await fs.writeFile(completePath, content.toString());
+    const path = serializePath(downloadsFolder().split("\\").join("/"));
+    const completePath = path + "/" + name;
+    await promisify(fs.writeFile)(completePath, Buffer.from(content.data));
   } catch (error) {}
 }
 
