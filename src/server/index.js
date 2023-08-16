@@ -31,6 +31,9 @@ wss.on("connection", (socket) => {
       case "upload-files":
         handleUploadFilesEvent(body, socket);
         break;
+      case "get-file":
+        handleGetFileEvent(body, socket);
+        break;
       default:
         break;
     }
@@ -59,7 +62,6 @@ const handleCreateBucketEvent = (body, socket) => {
 const handleJoinBucketEvent = (body, socket) => {
   const { code } = body;
   const bucket = buckets.get(code);
-  console.log(buckets, code);
   let res;
   if (!bucket) {
     res = generateSocketMessage("error-message", {
@@ -74,7 +76,7 @@ const handleJoinBucketEvent = (body, socket) => {
 };
 
 const handleUploadFilesEvent = (body, socket) => {
-  const { code, bytes } = body;
+  const { code, response } = body;
   const bucket = buckets.get(code);
   let res;
   if (!bucket) {
@@ -84,10 +86,17 @@ const handleUploadFilesEvent = (body, socket) => {
     socket.send(res);
     return;
   }
+  if (response.error) {
+    res = generateSocketMessage("error-message", {
+      message: `Upload error - File could not be uploaded (${bytes.error})`,
+    });
+    socket.send(res);
+    return;
+  }
 
-  bucket.uploadFile(bytes);
+  bucket.uploadFile(response.bytes, response.name);
   bucket.updateStatus(T_READY); // socket response gets sent in the method itself
-  console.log(bucket.T_RES);
+  console.log(bucket.T_RES, bucket.T_STRUCT);
   return;
 };
 
@@ -103,6 +112,24 @@ const handleChangeStatusEvent = (body, socket) => {
     return;
   }
   bucket.updateStatus(status); // socket response gets sent in the method itself
+  return;
+};
+
+const handleGetFileEvent = (body, socket) => {
+  const { code } = body;
+  const bucket = buckets.get(code);
+  let res;
+  if (!bucket) {
+    res = generateSocketMessage("error-message", {
+      message: "Invalid bucket - Bucket was not found",
+    });
+    socket.send(res);
+    return;
+  }
+  res = generateSocketMessage("file-gotten", {
+    file: bucket.file,
+  });
+  socket.send(res);
   return;
 };
 

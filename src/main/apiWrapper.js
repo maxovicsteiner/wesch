@@ -8,6 +8,7 @@ const { findDotIndex } = require("../utils/findDotIndex");
 const { promisify } = require("util");
 const { shell } = require("electron");
 const { isWin } = require(".");
+const { getFileNameFromPath } = require("../utils");
 
 function handleReadDir(_event, path) {
   const exists = fs.existsSync(path);
@@ -123,10 +124,13 @@ async function handleOpenFile(_event, path) {
   }
 }
 
-async function handleGetFileBytes(_event, path) {
+async function handleGetFileBytes(_event, _path) {
   try {
+    const path = serializePath(_path);
     const bytes = await promisify(fs.readFile)(path);
-    return bytes;
+    const name = getFileNameFromPath(path);
+    console.log(bytes, name);
+    return { bytes, name };
   } catch (error) {
     return {
       error: `Upload error - File could not be uploaded (${error.message})`,

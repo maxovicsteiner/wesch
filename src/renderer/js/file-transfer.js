@@ -1,6 +1,7 @@
 "use strict";
 
-const { T_UPLOADING } = require("../../classes/Bucket");
+const T_UPLOADING = "T_UPLOADING";
+const T_READY = "T_READY";
 
 // The contents of this file are responsible for the webRTC based p2p file sharing feature
 const ws = new WebSocket("ws://localhost:8080");
@@ -70,6 +71,9 @@ function handleResponse({ data }) {
     case "status-updated":
       handleStatusUpdatedEvent(body);
       break;
+    case "file-gotten":
+      handleFileGottenEvent(body);
+      break;
     case "error-message":
       handleErrorMessage(body);
       break;
@@ -98,10 +102,10 @@ actionButton.onclick = async (e) => {
         status: T_UPLOADING,
       });
       ws.send(req);
-      const bytes = await fs.getFileBytes(path_input.value.trim());
+      const response = await fs.getFileBytes(filePathInput.value.trim());
       req = generateSocketMessage("upload-files", {
         code,
-        bytes,
+        response,
       });
       actionButton.setAttribute("disabled", true);
       // actionButton.innerText = "Uploading...";
@@ -136,6 +140,15 @@ const handleFileUploadedEvent = (body) => {
 const handleStatusUpdatedEvent = (body) => {
   const { status } = body;
   changeStatusPlaceholder(status);
+  if (status === T_READY) {
+    let req = generateSocketMessage("get-file", { code });
+    ws.send(req);
+  }
+};
+
+const handleFileGottenEvent = (body) => {
+  const { file } = body;
+  console.log(file);
 };
 
 const handleErrorMessage = (body) => {

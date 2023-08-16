@@ -29,10 +29,11 @@ class Bucket {
   }
 
   /**
-   * @param {ArrayBuffer} DATA
+   * @param {Array} bin_data
    */
-  uploadFile(bin_data) {
-    this.T_RES = bin_data;
+  uploadFile(bin_data, name) {
+    this.T_RES = Buffer.from(bin_data);
+    this.T_STRUCT = name;
   }
 
   /**
@@ -45,6 +46,10 @@ class Bucket {
       status: this.T_STATUS,
     });
     this.R_SOCK.send(res);
+  }
+
+  get file() {
+    return this.T_RES;
   }
 }
 
