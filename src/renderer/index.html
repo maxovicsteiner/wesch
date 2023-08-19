@@ -110,7 +110,10 @@
         <input type="text" autofocus placeholder="Path of file" class="box" required id="file_path"/>
         <h1 id="status"></h1>
         <button type="submit" class="submit" id="create_or_inspect_bucket">Create bucket</button>
-        <p id="error"></p>
+        <div style="display:flex; justify-content: space-between;">
+          <p id="error_or_success"></p>
+          <a href="" type="button" class="reset" id="reset_process">Abort operation</a>
+        </div>
       </form>
     </div>
     </div>
@@ -137,7 +140,7 @@
       type_choice = value;
       let text = `Name of ${type_choice.toLowerCase()}`;
       if (type_choice === "File") text += " with extension (Default: *.txt)";
-      new_file_input.placeholder = text;    
+      new_file_input.placeholder = text;
     }
     typeRadioButtons.forEach(button => {
       if (button.checked) changePlaceholder(button.value)
@@ -179,6 +182,7 @@
     const filePathInput = document.getElementById("file_path")
     const bucket_id = document.getElementById("bucket_id");
     const statusPlaceholder = document.getElementById("status");
+    const resetButton = document.getElementById("reset_process");
     let code = "";
     let role_choice = "";
 
@@ -199,6 +203,7 @@
           actionButton.innerText = "Inspect bucket";
           filePathInput.classList.add("hide");
           statusPlaceholder.classList.add("hide");
+          resetButton.classList.add("hide");
           break;
         case "create":
           bucket_id.onclick = handleCopy;
@@ -210,18 +215,21 @@
           actionButton.innerText = "Create bucket";
           filePathInput.classList.add("hide");
           statusPlaceholder.classList.add("hide");
+          resetButton.classList.add("hide");
           break;
         case "download":
           statusPlaceholder.classList.remove("hide");
           statusPlaceholder.innerText = "Bucket status: loading...";
           bucket_id.setAttribute("readonly", true);
           actionButton.innerText = "Download content when ready";
+          resetButton.classList.remove("hide");
           break;
         case "upload":
           statusPlaceholder.classList.add("hide");
           filePathInput.classList.remove("hide")
           bucket_id.setAttribute("readonly", true);
-          actionButton.innerText = "Upload file(s)"
+          actionButton.innerText = "Upload file";
+          resetButton.classList.remove("hide");
           break;
         default:
           break;
@@ -294,7 +302,7 @@
       statusPlaceholder.innerText = t;
     }
 
-    const errorMessage = document.getElementById("error");
+    const errorOrSuccess = document.getElementById("error_or_success");
   </script>
   <script src="js/file-navigation.js"></script>
   <script src="js/file-transfer.js"></script>

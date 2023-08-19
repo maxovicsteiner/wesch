@@ -84,7 +84,7 @@ const handleUploadFilesEvent = (body, socket) => {
   }
   if (response.error) {
     res = generateSocketMessage("error-message", {
-      message: `${bytes.error}`,
+      message: `${response.error}`,
     });
     socket.send(res);
     return;
@@ -92,7 +92,6 @@ const handleUploadFilesEvent = (body, socket) => {
 
   bucket.uploadFile(response.bytes, response.name);
   bucket.updateStatus(T_READY); // socket response gets sent in the method itself
-  console.log(bucket.T_RES, bucket.T_STRUCT);
   return;
 };
 

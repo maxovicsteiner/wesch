@@ -24,8 +24,20 @@ class Bucket {
    * @param {WebSocket} socket
    */
   addReceiver(socket) {
-    if (this.R_SOCK) return;
+    if (this.R_SOCK) {
+      let res = generateSocketMessage("error-message", {
+        message: "Receiving end has already been set",
+      });
+      this.R_SOCK.send(res);
+      return;
+    }
     this.R_SOCK = socket;
+    if (this.T_STATUS === T_READY) {
+      let res = generateSocketMessage("status-updated", {
+        status: this.T_STATUS,
+      });
+      this.R_SOCK.send(res);
+    }
   }
 
   /**

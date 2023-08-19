@@ -260,8 +260,19 @@ dialog::backdrop {
     background: var(--blue);
     color: var(--white);
     outline: none;
-    border: none;
+    border: 1px solid var(--blue);
     padding: 10px 15px;
+    border-radius: 2px;
+}
+
+.reset {
+    color: var(--error-red-text);
+    margin-left:auto;
+    width:max-content
+}
+
+.reset:hover {
+    color: var(--white);
 }
 
 #create_dialog > form, #file_transfer_form {
@@ -289,7 +300,8 @@ input[type="radio"]
 }
 
 button:disabled {
-    background-color: var(--disabled-grey)
+    background-color: var(--disabled-grey);
+    border-color: var(--disabled-grey)
 }
 
 #bucket_id, #file_path {
@@ -311,8 +323,12 @@ label {
     cursor: pointer;
 }
 
-#error {
-    color: var(--error-red-text)
+#error_or_success[data-nature="error"] {
+    color: var(--error-red-text) !important;
+}
+
+#error_or_success[data-nature="success"] {
+    color: var(--success-green-text) !important;
 }
 
 #status {

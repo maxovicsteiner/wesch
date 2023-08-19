@@ -3,8 +3,11 @@
 const T_UPLOADING = "T_UPLOADING";
 const T_READY = "T_READY";
 
-// The contents of this file are responsible for the webRTC based p2p file sharing feature
 const ws = new WebSocket("ws://localhost:8080");
+
+let userReadyToDownload = false,
+  fileReadyToDownload = false,
+  fileData = null;
 
 /**
  *
@@ -29,20 +32,27 @@ function lockRoleChoice(val) {
   });
 }
 
-let previousErrorTimeout = null;
+let previousErrorOrSuccessTimeout = null;
 /**
  *
  * @param {string} message
+ * @param {"error" | "success"} nature
  */
-function displayError(message) {
-  errorMessage.innerText = message;
-  if (previousErrorTimeout) clearTimeout(previousErrorTimeout);
-  const currentTimeout = setTimeout(() => {
-    errorMessage.innerText = "";
-    actionButton.removeAttribute("disabled");
-    if (previousErrorTimeout === currentTimeout) previousErrorTimeout = null;
-  }, 3000);
-  previousErrorTimeout = currentTimeout;
+function displayErrorOrSuccess(message, nature) {
+  errorOrSuccess.innerText = message;
+  errorOrSuccess.dataset.nature = nature;
+  if (previousErrorOrSuccessTimeout)
+    clearTimeout(previousErrorOrSuccessTimeout);
+  const currentTimeout = setTimeout(
+    () => {
+      errorOrSuccess.innerText = "";
+      nature === "error" && actionButton.removeAttribute("disabled");
+      if (previousErrorOrSuccessTimeout === currentTimeout)
+        previousErrorOrSuccessTimeout = null;
+    },
+    nature === "error" ? 3000 : 10000
+  );
+  previousErrorOrSuccessTimeout = currentTimeout;
 }
 
 ws.onmessage = handleResponse;
@@ -89,14 +99,12 @@ actionButton.onclick = async (e) => {
     case "Create bucket":
       req = generateSocketMessage("create-bucket", { code });
       actionButton.setAttribute("disabled", true);
-      // actionButton.innerText = "Creating...";
       break;
     case "Inspect bucket":
       req = generateSocketMessage("join-bucket", { code: bucket_id.value });
       actionButton.setAttribute("disabled", true);
-      // actionButton.innerText = "Joining...";
       break;
-    case "Upload file(s)":
+    case "Upload file":
       req = generateSocketMessage("change-status", {
         code,
         status: T_UPLOADING,
@@ -108,7 +116,12 @@ actionButton.onclick = async (e) => {
         response,
       });
       actionButton.setAttribute("disabled", true);
-      // actionButton.innerText = "Uploading...";
+      break;
+    case "Download content when ready":
+      userReadyToDownload = true;
+      if (fileReadyToDownload)
+        await handleDownloadWrapper(fileData.file, fileData.name);
+      actionButton.setAttribute("disabled", true);
       break;
     default:
       break;
@@ -133,10 +146,6 @@ const handleJoinedBucketEvent = (body) => {
   changeStatusPlaceholder(status);
 };
 
-const handleFileUploadedEvent = (body) => {
-  console.log(body.result);
-};
-
 const handleStatusUpdatedEvent = (body) => {
   const { status } = body;
   changeStatusPlaceholder(status);
@@ -150,10 +159,28 @@ const handleStatusUpdatedEvent = (body) => {
 
 const handleFileGottenEvent = async (body) => {
   const { file } = body;
-  await fs.downloadFile(file.file, file.name);
+  fileReadyToDownload = true;
+  fileData = {
+    file: file.file,
+    name: file.name,
+  };
+  if (userReadyToDownload) await handleDownloadWrapper(file.file, file.name);
 };
+
+async function handleDownloadWrapper(content, name) {
+  const res = await fs.downloadFile(content, name);
+  if (res.path)
+    displayErrorOrSuccess(
+      `File has been successfully downloaded and is available at:\n${res.path}`,
+      "success"
+    );
+  actionButton.removeAttribute("disabled");
+  actionButton.innerText = `Open ${name}`;
+
+  if (res.error) displayErrorOrSuccess(res.error, "error");
+}
 
 const handleErrorMessage = (body) => {
   const { message } = body;
-  displayError(message);
+  displayErrorOrSuccess(message, "error");
 };

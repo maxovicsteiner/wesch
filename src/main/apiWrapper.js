@@ -128,9 +128,12 @@ async function handleOpenFile(_event, path) {
 async function handleGetFileBytes(_event, _path) {
   try {
     const path = serializePath(_path);
+    if (fs.statSync(path)?.isDirectory())
+      return {
+        error: "Upload error - File is either a directory or protected",
+      };
     const bytes = await promisify(fs.readFile)(path);
     const name = getFileNameFromPath(path);
-    console.log(bytes, name);
     return { bytes, name };
   } catch (error) {
     return {
@@ -144,7 +147,12 @@ async function handleDownloadFile(_event, content, name) {
     const path = serializePath(downloadsFolder().split("\\").join("/"));
     const completePath = path + "/" + name;
     await promisify(fs.writeFile)(completePath, Buffer.from(content.data));
-  } catch (error) {}
+    return { path: completePath };
+  } catch (error) {
+    return {
+      error: `Download error - File could not be downloaded (${error.message})`,
+    };
+  }
 }
 
 module.exports = {
